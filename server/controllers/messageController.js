@@ -18,7 +18,7 @@ const getMessages = async (req, res, next) => {
     /* 
     Project the messages for client consumption
     Maps over the retrieved messages to create a new array (projectedMessages) with a modified structure.
-    fromSelf is a boolean indicating whether the message sender is the current user
+    fromSelf is a boolean indicating whether the message sender is the current user or not 
     */
     const projectedMessages = messages.map((msg) => {
       return {

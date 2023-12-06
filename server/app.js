@@ -1,12 +1,12 @@
 const express = require("express");
+const http = require("http");
+const socketIO = require("socket.io");
 const cors = require("cors");
-const socket = require("socket.io");
 const db = require("./config/db");
-
-// Load environment variables
 require("dotenv").config();
 
 const app = express();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -15,32 +15,35 @@ app.use(express.json());
 app.use("/api/auth", require("./Routes/userRoutes"));
 app.use("/api/msg", require("./Routes/messageRoutes"));
 
-const PORT = process.env.PORT || 8000;
-
-const server = app.listen(PORT, () => {
-  console.log(`WebSocket server is running on port ${PORT}`);
-});
-
 // socket io server
-const io = socket(server, {
+const server = http.createServer(app);
+
+// Socket.IO server
+const io = socketIO(server, {
   cors: {
     origin: "http://localhost:3000",
     credentials: true,
   },
 });
 
-// global.onlineUsers = new Map();
-io.on("connection", (socket) => {
-  console.log("user is connected");
-  // global.chatSocket = socket;
-  // socket.on("add-user", (userId) => {
-  //   onlineUsers.set(userId, socket.id);
-  // });
+let onlineUsers = {};
 
-  // socket.on("send-msg", (data) => {
-  //   const sendUserSocket = onlineUsers.get(data.to);
-  //   if (sendUserSocket) {
-  //     socket.to(sendUserSocket).emit("msg-recieve", data.msg);
-  //   }
-  // });
+// In your connection event handler
+io.on("connection", (socket) => {
+  socket.on("add-user", (userId) => {
+    onlineUsers[userId] = socket.id;
+  });
+
+  socket.on("send-msg", (data) => {
+    const sendUserSocket = onlineUsers[data.to];
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("msg-receive", data.msg);
+    }
+  });
+});
+
+const PORT = process.env.PORT || 8000;
+
+server.listen(PORT, () => {
+  console.log(`WebSocket server is running on port ${PORT}`);
 });
