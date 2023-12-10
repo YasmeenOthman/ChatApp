@@ -28,18 +28,23 @@ const io = socketIO(server, {
 
 let onlineUsers = {};
 
-// In your connection event handler
+// socket connection event handler
 io.on("connection", (socket) => {
-  socket.on("add-user", (userId) => {
-    onlineUsers[userId] = socket.id;
+  console.log(socket);
+  socket.on("chat message", (msg) => {
+    console.log("message: " + msg);
   });
+  // socket.on("add-user", (userId) => {
+  //   onlineUsers[userId] = socket.id;
+  // });
 
-  socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers[data.to];
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-receive", data.msg);
-    }
-  });
+  // socket.on("send-msg", (data) => {
+  //   console.log(data);
+  //   const sendUserSocket = onlineUsers[data.to];
+  //   if (sendUserSocket) {
+  //     socket.to(sendUserSocket).emit("msg-receive", data.msg);
+  //   }
+  // });
 });
 
 const PORT = process.env.PORT || 8000;

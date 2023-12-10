@@ -1,8 +1,8 @@
 const Messages = require("../models/messageModel");
 
-const getMessages = async (req, res, next) => {
+const getMessages = async (req, res) => {
   try {
-    const { sender, receiver } = req.body;
+    const { senderId, receiverId } = req.query;
 
     /* 
     Uses Mongoose to query the database for messages between two users (from and to).
@@ -11,7 +11,7 @@ const getMessages = async (req, res, next) => {
     */
     const messages = await Messages.find({
       users: {
-        $all: [sender, receiver],
+        $all: [senderId, receiverId],
       },
     }).sort({ updatedAt: 1 });
 
@@ -22,7 +22,7 @@ const getMessages = async (req, res, next) => {
     */
     const projectedMessages = messages.map((msg) => {
       return {
-        fromSelf: msg.sender.toString() === sender,
+        fromSelf: msg.sender.toString() === senderId,
         message: msg.message.text,
       };
     });
@@ -34,13 +34,13 @@ const getMessages = async (req, res, next) => {
 
 const addMessage = async (req, res, next) => {
   try {
-    const { sender, receiver, message } = req.body;
+    const { senderId, receiverId, message } = req.body;
 
     // Create a new message
     const data = await Messages.create({
       message: { text: message },
-      users: [sender, receiver],
-      sender: sender,
+      users: [senderId, receiverId],
+      sender: senderId,
     });
 
     if (data) return res.json({ msg: "Message added successfully." });

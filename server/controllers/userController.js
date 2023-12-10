@@ -19,7 +19,9 @@ const registerUser = async (req, res) => {
 
     const emailCheck = await User.findOne({ email });
     if (emailCheck)
-      return res.json({ msg: "Email already used", status: false });
+      return res.res
+        .status(400)
+        .json({ msg: "Email already used", status: false });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
@@ -27,8 +29,17 @@ const registerUser = async (req, res) => {
       username,
       password: hashedPassword,
     });
+    const token = jwt.sign(
+      { userId: newUser._id, username: newUser.username },
+      process.env.TOKEN_KEY,
+      { expiresIn: "2h" }
+    );
     delete newUser.password;
-    return res.json({ status: true, newUser });
+    return res.status(200).json({
+      msg: "registered Successfully Welcome!",
+      status: true,
+      token,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Server error,Can not create a new user" });
@@ -42,6 +53,7 @@ const loginUser = async (req, res) => {
     if (!(username && password)) {
       return res.status(400).send({
         msg: "Both username and password are required ",
+        status: false,
       });
     }
     const user = await User.findOne({ username });
@@ -54,17 +66,45 @@ const loginUser = async (req, res) => {
           { expiresIn: "2h" }
         );
 
-        res.status(200).json({ msg: "Login successfully", token });
+        res
+          .status(200)
+          .json({ msg: "Login successfully", token, status: true });
       } else {
-        res.status(401).json({ msg: "Wrong Password" });
+        res.status(401).json({ msg: "Wrong Password", status: false });
       }
     } else {
-      res.status(400).send({ msg: "User not found,please register first" });
+      res
+        .status(400)
+        .send({ msg: "User not found,please register first", status: false });
     }
   } catch (err) {
     console.log(err);
-    res.status(500).send({ msg: "The server is down, please login again " });
+    res
+      .status(500)
+      .send({ msg: "The server is down, please login again ", status: false });
   }
 };
 
-module.exports = { registerUser, loginUser };
+// get all users
+const getAllUsers = async (req, res) => {
+  try {
+    let id = req.params.id;
+
+    // $ne selects the documents where the value of
+    //  the specified field is not equal to the specified value.
+    let allUsers = await User.find({ _id: { $ne: id } }).select([
+      "_id",
+      "email",
+      "username",
+      " avatarImage",
+    ]);
+    res.send(allUsers);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .send({ msg: "Server is down, We are trying to fix it  ", error });
+  }
+};
+
+module.exports = { registerUser, loginUser, getAllUsers };
