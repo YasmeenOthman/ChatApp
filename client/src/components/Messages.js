@@ -1,6 +1,7 @@
 import React from "react";
 
 function Messages({ messages }) {
+  console.log(messages);
   return (
     <div className="chat-messages">
       {messages.map((msg, index) => {

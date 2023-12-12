@@ -34,6 +34,10 @@ io.on("connection", (socket) => {
     console.log(data);
 
     // Broadcast the message to the receiver's socket
+    io.to(`message:${data.senderId}`).emit("receive-msg", {
+      fromSelf: false,
+      message: data.message,
+    });
     io.to(`message:${data.receiverId}`).emit("receive-msg", {
       fromSelf: true,
       message: data.message,
@@ -42,6 +46,7 @@ io.on("connection", (socket) => {
 
   // Join a room for each user
   socket.on("join-room", (userId) => {
+    console.log(userId);
     socket.join(`message:${userId}`);
   });
 

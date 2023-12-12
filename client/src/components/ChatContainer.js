@@ -9,16 +9,14 @@ import axios from "axios";
 function ChatContainer({ currentChat, userId, socket }) {
   const [messages, setMessages] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
+
   useEffect(() => {
     // Set up message listeners
     const handleReceiveMessage = (msg) => {
       console.log("Received message:", msg);
       setArrivalMessage(msg);
     };
-
     socket.on("receive-msg", handleReceiveMessage);
-
-    // Clean up event listeners when the component unmounts
     return () => {
       socket.off("receive-msg", handleReceiveMessage);
     };
@@ -28,6 +26,7 @@ function ChatContainer({ currentChat, userId, socket }) {
     if (arrivalMessage) {
       setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
     }
+    console.log(messages);
   }, [arrivalMessage, setMessages]);
 
   useEffect(() => {
@@ -43,14 +42,8 @@ function ChatContainer({ currentChat, userId, socket }) {
     getAllMessages();
   }, [currentChat]);
 
-  // Update messages when arrivalMessage changes
-  useEffect(() => {
-    if (arrivalMessage) {
-      setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
-    }
-  }, [arrivalMessage, setMessages]);
-
   const handleSendMsg = async (msg) => {
+    console.log(userId, currentChat._id);
     socket.emit("send-msg", {
       senderId: userId,
       receiverId: currentChat._id,
