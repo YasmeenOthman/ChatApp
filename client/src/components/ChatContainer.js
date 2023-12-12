@@ -10,25 +10,7 @@ function ChatContainer({ currentChat, userId, socket }) {
   const [messages, setMessages] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
 
-  useEffect(() => {
-    // Set up message listeners
-    const handleReceiveMessage = (msg) => {
-      console.log("Received message:", msg);
-      setArrivalMessage(msg);
-    };
-    socket.on("receive-msg", handleReceiveMessage);
-    return () => {
-      socket.off("receive-msg", handleReceiveMessage);
-    };
-  }, [socket]);
-
-  useEffect(() => {
-    if (arrivalMessage) {
-      setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
-    }
-    console.log(messages);
-  }, [arrivalMessage, setMessages]);
-
+  // ------- get all the messages --------
   useEffect(() => {
     async function getAllMessages() {
       const res = await axios.get("http://localhost:8000/api/msg/get", {
@@ -42,6 +24,7 @@ function ChatContainer({ currentChat, userId, socket }) {
     getAllMessages();
   }, [currentChat]);
 
+  // ------send a message -------
   const handleSendMsg = async (msg) => {
     console.log(userId, currentChat._id);
     socket.emit("send-msg", {
@@ -56,6 +39,26 @@ function ChatContainer({ currentChat, userId, socket }) {
       message: msg,
     });
   };
+
+  //  ----- handle receiving message in socket
+
+  useEffect(() => {
+    // Set up message listeners
+    const handleReceiveMessage = (msg) => {
+      setArrivalMessage(msg);
+    };
+    socket.on("receive-msg", handleReceiveMessage);
+    return () => {
+      socket.off("receive-msg", handleReceiveMessage);
+    };
+  }, [socket]);
+
+  // ---------- update the messages state ---------
+  useEffect(() => {
+    if (arrivalMessage) {
+      setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
+    }
+  }, [arrivalMessage, setMessages]);
 
   return (
     <Container>

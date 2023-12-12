@@ -31,22 +31,19 @@ const io = socketIO(server, {
 io.on("connection", (socket) => {
   // Handle incoming messages
   socket.on("send-msg", (data) => {
-    console.log(data);
-
     // Broadcast the message to the receiver's socket
-    io.to(`message:${data.senderId}`).emit("receive-msg", {
-      fromSelf: false,
-      message: data.message,
-    });
     io.to(`message:${data.receiverId}`).emit("receive-msg", {
       fromSelf: true,
+      message: data.message,
+    });
+    io.to(`message:${data.senderId}`).emit("receive-msg", {
+      fromSelf: false,
       message: data.message,
     });
   });
 
   // Join a room for each user
   socket.on("join-room", (userId) => {
-    console.log(userId);
     socket.join(`message:${userId}`);
   });
 
