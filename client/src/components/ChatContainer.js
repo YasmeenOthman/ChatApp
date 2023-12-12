@@ -68,6 +68,7 @@ function ChatContainer({ currentChat, userId, socket }) {
       </div>
 
       <Messages messages={messages} />
+
       <ChatInput handleSendMsg={handleSendMsg} />
     </Container>
   );

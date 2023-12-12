@@ -32,6 +32,23 @@ const getMessages = async (req, res) => {
   }
 };
 
+// const addMessage = async (req, res, next) => {
+//   try {
+//     const { senderId, receiverId, message } = req.body;
+
+//     // Create a new message
+//     const data = await Messages.create({
+//       message: { text: message },
+//       users: [senderId, receiverId],
+//       sender: senderId,
+//     });
+
+//     if (data) return res.json({ msg: "Message added successfully." });
+//     else return res.json({ msg: "Failed to add message to the database" });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
 // Helper function to add a message to the database
 const addMessageToDatabase = async (senderId, receiverId, message) => {
   try {

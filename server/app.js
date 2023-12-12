@@ -29,6 +29,15 @@ const io = socketIO(server, {
 
 // Handle socket connections
 io.on("connection", (socket) => {
+  // socket.on("get-all-messages", async ({ senderId, receiverId }) => {
+  //   try {
+  //     const messages = await getMessagesFromDatabase(senderId, receiverId);
+  //     io.to(`message:${senderId}`).emit("all-messages", messages);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // });
+
   // Handle incoming messages
   socket.on("send-msg", async (data) => {
     // Broadcast the message to the receiver's socket

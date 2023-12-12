@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 function Messages({ messages }) {
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div className="chat-messages">
       {messages.map((msg, index) => {
@@ -14,6 +20,7 @@ function Messages({ messages }) {
           </div>
         );
       })}
+      <div ref={messagesEndRef} />``
     </div>
   );
 }
