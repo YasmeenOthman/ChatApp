@@ -1,4 +1,4 @@
-const Messages = require("../models/messageModel");
+const Messages = require("../Models/messageModel");
 
 const getMessages = async (req, res) => {
   try {
@@ -32,10 +32,9 @@ const getMessages = async (req, res) => {
   }
 };
 
-const addMessage = async (req, res, next) => {
+// Helper function to add a message to the database
+const addMessageToDatabase = async (senderId, receiverId, message) => {
   try {
-    const { senderId, receiverId, message } = req.body;
-
     // Create a new message
     const data = await Messages.create({
       message: { text: message },
@@ -43,11 +42,14 @@ const addMessage = async (req, res, next) => {
       sender: senderId,
     });
 
-    if (data) return res.json({ msg: "Message added successfully." });
-    else return res.json({ msg: "Failed to add message to the database" });
+    if (data) {
+      console.log("Message added to the database successfully.");
+    } else {
+      console.log("Failed to add message to the database");
+    }
   } catch (err) {
     console.log(err);
   }
 };
 
-module.exports = { getMessages, addMessage };
+module.exports = { getMessages, addMessageToDatabase };

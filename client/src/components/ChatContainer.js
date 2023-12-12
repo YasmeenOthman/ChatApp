@@ -26,14 +26,7 @@ function ChatContainer({ currentChat, userId, socket }) {
 
   // ------send a message -------
   const handleSendMsg = async (msg) => {
-    console.log(userId, currentChat._id);
     socket.emit("send-msg", {
-      senderId: userId,
-      receiverId: currentChat._id,
-      message: msg,
-    });
-
-    await axios.post("http://localhost:8000/api/msg/add", {
       senderId: userId,
       receiverId: currentChat._id,
       message: msg,

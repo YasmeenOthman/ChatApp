@@ -2,9 +2,9 @@ const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
 const cors = require("cors");
-const db = require("./config/db");
-const { send } = require("process");
 require("dotenv").config();
+const db = require("./config/db");
+const { addMessageToDatabase } = require("./controllers/messageController");
 
 const app = express();
 
@@ -30,7 +30,7 @@ const io = socketIO(server, {
 // Handle socket connections
 io.on("connection", (socket) => {
   // Handle incoming messages
-  socket.on("send-msg", (data) => {
+  socket.on("send-msg", async (data) => {
     // Broadcast the message to the receiver's socket
     io.to(`message:${data.receiverId}`).emit("receive-msg", {
       fromSelf: true,
@@ -40,6 +40,8 @@ io.on("connection", (socket) => {
       fromSelf: false,
       message: data.message,
     });
+    // Save the message to the database
+    await addMessageToDatabase(data.senderId, data.receiverId, data.message);
   });
 
   // Join a room for each user
