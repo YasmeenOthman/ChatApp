@@ -3,6 +3,7 @@ const http = require("http");
 const socketIO = require("socket.io");
 const cors = require("cors");
 const db = require("./config/db");
+const { send } = require("process");
 require("dotenv").config();
 
 const app = express();
@@ -26,25 +27,28 @@ const io = socketIO(server, {
   },
 });
 
-let onlineUsers = {};
-
-// socket connection event handler
+// Handle socket connections
 io.on("connection", (socket) => {
-  console.log(socket);
-  socket.on("chat message", (msg) => {
-    console.log("message: " + msg);
-  });
-  // socket.on("add-user", (userId) => {
-  //   onlineUsers[userId] = socket.id;
-  // });
+  // Handle incoming messages
+  socket.on("send-msg", (data) => {
+    console.log(data);
 
-  // socket.on("send-msg", (data) => {
-  //   console.log(data);
-  //   const sendUserSocket = onlineUsers[data.to];
-  //   if (sendUserSocket) {
-  //     socket.to(sendUserSocket).emit("msg-receive", data.msg);
-  //   }
-  // });
+    // Broadcast the message to the receiver's socket
+    io.to(`message:${data.receiverId}`).emit("receive-msg", {
+      fromSelf: true,
+      message: data.message,
+    });
+  });
+
+  // Join a room for each user
+  socket.on("join-room", (userId) => {
+    socket.join(`message:${userId}`);
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
 });
 
 const PORT = process.env.PORT || 8000;

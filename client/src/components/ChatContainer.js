@@ -6,8 +6,29 @@ import ChatInput from "../components/ChatInput";
 import Messages from "./Messages";
 import axios from "axios";
 
-function ChatContainer({ currentChat, userId }) {
+function ChatContainer({ currentChat, userId, socket }) {
   const [messages, setMessages] = useState([]);
+  const [arrivalMessage, setArrivalMessage] = useState(null);
+  useEffect(() => {
+    // Set up message listeners
+    const handleReceiveMessage = (msg) => {
+      console.log("Received message:", msg);
+      setArrivalMessage(msg);
+    };
+
+    socket.on("receive-msg", handleReceiveMessage);
+
+    // Clean up event listeners when the component unmounts
+    return () => {
+      socket.off("receive-msg", handleReceiveMessage);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (arrivalMessage) {
+      setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
+    }
+  }, [arrivalMessage, setMessages]);
 
   useEffect(() => {
     async function getAllMessages() {
@@ -17,19 +38,32 @@ function ChatContainer({ currentChat, userId }) {
           receiverId: currentChat._id,
         },
       });
-      console.log(res.data);
       setMessages(res.data);
     }
     getAllMessages();
   }, [currentChat]);
 
+  // Update messages when arrivalMessage changes
+  useEffect(() => {
+    if (arrivalMessage) {
+      setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
+    }
+  }, [arrivalMessage, setMessages]);
+
   const handleSendMsg = async (msg) => {
+    socket.emit("send-msg", {
+      senderId: userId,
+      receiverId: currentChat._id,
+      message: msg,
+    });
+
     await axios.post("http://localhost:8000/api/msg/add", {
       senderId: userId,
       receiverId: currentChat._id,
       message: msg,
     });
   };
+
   return (
     <Container>
       <div className="chat-header">

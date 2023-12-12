@@ -6,12 +6,14 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Welcome from "./Welcome";
 import ChatContainer from "../components/ChatContainer";
+import io from "socket.io-client";
 
 function Chat() {
   const navigate = useNavigate();
   const [allUsers, setAllUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentChat, setCurrentChat] = useState(undefined);
+  const socket = io("http://localhost:8000");
 
   let token;
   let decoded;
@@ -45,6 +47,23 @@ function Chat() {
     getAllUsers();
   }, [currentUser]);
 
+  useEffect(() => {
+    if (currentChat) {
+      // Join the room corresponding to the current chat
+      socket.emit("join-room", currentChat._id);
+    }
+
+    // Ensure the socket is connected before trying to leave the room
+    if (socket.connected) {
+      return () => {
+        // Leave the room when the component unmounts or chat changes
+        if (currentChat) {
+          socket.emit("leave-room", currentChat._id);
+        }
+      };
+    }
+  }, [socket, currentChat]);
+
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
   };
@@ -60,7 +79,11 @@ function Chat() {
         {currentChat === undefined ? (
           <Welcome currentUser={currentUser} />
         ) : (
-          <ChatContainer currentChat={currentChat} userId={userId} />
+          <ChatContainer
+            currentChat={currentChat}
+            userId={userId}
+            socket={socket}
+          />
         )}
       </div>
     </Container>
